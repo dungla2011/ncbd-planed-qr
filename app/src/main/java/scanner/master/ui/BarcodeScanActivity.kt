@@ -153,7 +153,7 @@ class BarcodeScanningActivity : AppCompatActivity() {
                     }
                 }
 
-                val newUrl = "https://mytree.vn/tool1/_site/event_mng/qr-scaned-post.php?qrs=$result"
+                val newUrl = "https://ncbd.mytree.vn/tool1/_site/event_mng/qr-scaned-post.php?qrs=$result"
                 binding.webview.loadUrl(newUrl)
 
             }
@@ -204,7 +204,7 @@ class BarcodeScanningActivity : AppCompatActivity() {
             if(isAvailable){
                 //binding.lnLow.visibility = View.GONE
                 //binding.webview.visibility = View.VISIBLE
-                binding.webview.loadUrl("https://mytree.vn/tool1/_site/event_mng/qr-scaned-post.php")
+                binding.webview.loadUrl("https://ncbd.mytree.vn/tool1/_site/event_mng/qr-scaned-post.php")
             }else{
                 //binding.webview.visibility = View.GONE
                 //binding.lnLow.visibility = View.VISIBLE
