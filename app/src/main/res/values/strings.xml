@@ -1,0 +1,13 @@
+<resources>
+    <string name="app_name">Scanner</string>
+    <string name="start_scanning">Start Scanning</string>
+    <string name="view_finder">View Finder</string>
+    <string name="scanning_with">Scanning with</string>
+    <string name="scanner_library">Scanner Library</string>
+    <string name="result">Result</string>
+    <string name="loading">.......</string>
+    <string name="copy">Copy</string>
+    <string name="scanner">PlaneD-QR</string>
+    <string name="turn_flash_on_off">Turn Flash On/Off</string>
+    <string name="scan_with_ml_kit">Start</string>
+</resources>
