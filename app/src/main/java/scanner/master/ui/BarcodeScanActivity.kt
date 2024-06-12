@@ -52,7 +52,7 @@ class BarcodeScanningActivity : AppCompatActivity() {
     private var scannerSDK = "QRCode" //default is MLKit
     private lateinit var connectivityLiveData:ConnectivityLiveData
     var arr_data = ArrayList<String>()
-    private var lensFacing = CameraSelector.LENS_FACING_BACK
+    private var lensFacing = CameraSelector.LENS_FACING_FRONT
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityBarcodeScanningBinding.inflate(layoutInflater)
@@ -109,7 +109,7 @@ class BarcodeScanningActivity : AppCompatActivity() {
             }
         }
         orientationEventListener.enable()
-        binding.txtLayout.setHint("Kết quả: ")
+//        binding.txtLayout.setHint("Kết quả: ")
         requestWebView()
         fun repeatDelayed(delay: Long, action: () -> Unit): Handler {
             val handler = Handler(Looper.getMainLooper())
