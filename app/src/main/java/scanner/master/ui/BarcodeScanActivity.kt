@@ -4,6 +4,10 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
+import android.media.AudioAttributes
+import android.media.AudioManager
+import android.media.MediaPlayer
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.os.Handler
@@ -27,11 +31,15 @@ import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.Observer
 import com.google.common.util.concurrent.ListenableFuture
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import scanner.master.R
 import scanner.master.analyzer.BarcodeAnalyzer
 import scanner.master.analyzer.ScanningResultListener
 import scanner.master.databinding.ActivityBarcodeScanningBinding
 import scanner.master.ui.custom.ConnectivityLiveData
+import java.io.IOException
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import java.time.LocalTime
@@ -44,6 +52,9 @@ class BarcodeScanningActivity : AppCompatActivity() {
     private var lastScanTime: Long = 0
     private val delayMillis: Long = 1000 // 1 second delay
 
+    var lastPlayTimeAudio: Long = 0
+    val delayMillisAudio: Long = 2000 // 3 second delay
+
     private lateinit var cameraProviderFuture: ListenableFuture<ProcessCameraProvider>
     private lateinit var binding: ActivityBarcodeScanningBinding
     /** Blocking camera operations are performed using this executor */
@@ -53,6 +64,8 @@ class BarcodeScanningActivity : AppCompatActivity() {
     private lateinit var connectivityLiveData:ConnectivityLiveData
     var arr_data = ArrayList<String>()
     private var lensFacing = CameraSelector.LENS_FACING_FRONT
+
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityBarcodeScanningBinding.inflate(layoutInflater)
@@ -153,8 +166,79 @@ class BarcodeScanningActivity : AppCompatActivity() {
                     }
                 }
 
-                val newUrl = "https://ncbd.mytree.vn/tool1/_site/event_mng/qr-scaned-post.php?qrs=$result"
-                binding.webview.loadUrl(newUrl)
+
+                binding.webview.evaluateJavascript(
+                    "(function() { return document.getElementById('inputAllValx').value; })();"
+                ) { value ->
+                    // value chính là giá trị của phần tử input
+                    var value1 = value.replace("\"", "")
+                    Log.d("WebView123", "Value of myInput: $value1")
+
+                    ///////////////////////////////////
+                    //luôn cho load view ở đây, để sau khi lấy được giá trị js thì load lại
+                    //Nếu đặt ngoài thì có thể ko lấy được val1...,
+                    // vì đoạn này sẽ bị chạy qua trước khi js lấy được giá trị
+                    var newUrl = "https://ncbd.mytree.vn/tool1/_site/event_mng/qr-scaned-post.php?currentTime1=$currentTime1&inputAllValx=$value1&qrs=$result";
+//                    newUrl = "https://ncbd.mytree.vn/tool1/_site/event_mng/qr-scaned-post.php?qrs=data=37534259505b560507060677505a565e5b1954585a&inputAllValx=2|2";
+//                    binding.webview.loadUrl(newUrl)
+
+
+                    //Đưa vào đây để đảm bảo webview load xong mới excute js:
+                    binding.webview.webViewClient = object : WebViewClient() {
+                        override fun onPageFinished(view: WebView, url: String) {
+                            super.onPageFinished(view, url)
+                            // Now that the page has finished loading, evaluate the JavaScript
+                            binding.webview.evaluateJavascript(
+                                //Tìm 1 link bất kỳ có myAudio id, src
+                                "(function() { return document.getElementById('myAudio').src; })();"
+                            ) { mp3Link ->
+
+                                //Nếu thấy link mp3, thì sẽ play
+                                var mp3Link1 = mp3Link.replace("\"", "")
+                                // mp3Link chính là link mp3 của phần tử audio
+                                Log.d("WebView1", "MP3 link: $mp3Link1")
+
+                                val currentTime = System.currentTimeMillis()
+                                if (currentTime - lastPlayTimeAudio < delayMillisAudio) {
+                                    // It has not been 5 seconds since the last play, do not play the mp3
+                                    return@evaluateJavascript
+                                }
+                                // It has been 5 seconds since the last play, update the last play time and play the mp3
+                                lastPlayTimeAudio = currentTime
+                                try {
+                                    var mediaPlayer: MediaPlayer;
+                                    if(mp3Link1.contains("up.mp3")){
+                                        mediaPlayer = MediaPlayer.create(binding.webview.context, R.raw.up)
+                                        mediaPlayer.start() // no need to call prepare(); create() does that for you
+                                    }
+                                    if(mp3Link1.contains("warning.mp3")){
+                                        mediaPlayer = MediaPlayer.create(binding.webview.context, R.raw.warning)
+                                        mediaPlayer.start() // no need to call prepare(); create() does that for you
+                                    }
+
+//                            val uri = Uri.parse("android.resource://${this.packageName}/" + R.raw.up)
+//                            val mediaPlayer: MediaPlayer? = MediaPlayer().apply {
+//                                setDataSource(context, uri) //to set media source and send the object to the initialized state
+////                                setDataSource(mp3Link1) //to set media source and send the object to the initialized state
+//                                prepare() //to send the object to the prepared state, this may take time for fetching and decoding
+//                                start() //to start the music and send the object to started state
+//                            }
+                                } catch (e: IOException) {
+                                    // Handle the exception, e.g. show an error message to the user
+                                    Log.e("MediaPlayer", "Error setting data source or preparing MediaPlayer", e)
+                                }
+
+                            }
+                        }
+                    }
+
+                    //Load xong, thì chạy js ở trên
+                    binding.webview.loadUrl(newUrl)
+
+
+
+
+                }
 
             }
         }
