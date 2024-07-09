@@ -20,6 +20,7 @@ import android.view.View
 import android.webkit.WebSettings
 import android.webkit.WebView
 import android.webkit.WebViewClient
+import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
@@ -117,7 +118,6 @@ class BarcodeScanningActivity : AppCompatActivity() {
                     in 225..314 -> Surface.ROTATION_90
                     else -> Surface.ROTATION_0
                 }
-
                 imageAnalysis.targetRotation = rotation
             }
         }
@@ -251,6 +251,7 @@ class BarcodeScanningActivity : AppCompatActivity() {
 
         val camera =
             cameraProvider?.bindToLifecycle(this, cameraSelector, imageAnalysis, preview)
+
         binding.imgRotate.setOnClickListener {
             //camera.cameraControl.
             if(lensFacing == 0){
@@ -261,22 +262,34 @@ class BarcodeScanningActivity : AppCompatActivity() {
             val cameraProvider: ProcessCameraProvider = cameraProviderFuture.get()
             bindPreview(cameraProvider, lensFacing)
         }
+
+        val myLinearLayout = findViewById<LinearLayout>(R.id.layout_debug_text)
+        binding.showHideDebug.setOnClickListener {
+            Toast.makeText(this, "Show/Hide Debug", Toast.LENGTH_SHORT).show()
+            if (myLinearLayout.visibility == View.VISIBLE) {
+                myLinearLayout.visibility = View.GONE
+            } else {
+                myLinearLayout.visibility = View.VISIBLE
+            }
+        }
+
+
         if (camera?.cameraInfo?.hasFlashUnit() == true) {
             //binding.imgflash.visibility = View.VISIBLE
-            binding.imgflash.setOnClickListener {
-                camera.cameraControl.enableTorch(!flashEnabled)
-            }
-            camera.cameraInfo.torchState.observe(this) {
-                it?.let { torchState ->
-                    if (torchState == TorchState.ON) {
-                        flashEnabled = true
-                        binding.imgflash.setImageResource(R.drawable.ic_round_flash_on)
-                    } else {
-                        flashEnabled = false
-                        binding.imgflash.setImageResource(R.drawable.ic_round_flash_off)
-                    }
-                }
-            }
+//            binding.imgflash.setOnClickListener {
+//                camera.cameraControl.enableTorch(!flashEnabled)
+//            }
+//            camera.cameraInfo.torchState.observe(this) {
+//                it?.let { torchState ->
+//                    if (torchState == TorchState.ON) {
+//                        flashEnabled = true
+//                        binding.imgflash.setImageResource(R.drawable.ic_round_flash_on)
+//                    } else {
+//                        flashEnabled = false
+//                        binding.imgflash.setImageResource(R.drawable.ic_round_flash_off)
+//                    }
+//                }
+//            }
         }
     }
 
