@@ -4,10 +4,12 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:id="@+id/topLayout"
     android:orientation="vertical"
     tools:context=".ui.BarcodeScanningActivity">
 
     <LinearLayout
+        android:id="@+id/webZone"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="5"
@@ -23,6 +25,7 @@
     </LinearLayout>
 
     <LinearLayout
+        android:id="@+id/cameraZone"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="3"
@@ -74,6 +77,51 @@
 
     </LinearLayout>
 
+    <LinearLayout
+        android:id="@+id/layout_debug_buttons"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:visibility="gone"
+        android:background="@color/colorAccent"
+        android:orientation="vertical">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+            <Button
+                android:id="@+id/btnDebug01"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Debug1"
+                android:textColor="#FFFFFF"
+                android:background="@color/colorPrimary"
+                android:layout_margin="5dp" />
+
+            <Button
+                android:id="@+id/btnDebug02"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Debug2"
+                android:textColor="#FFFFFF"
+                android:background="@color/colorPrimary"
+                android:layout_margin="5dp" />
+
+            <Button
+                android:id="@+id/btnDebug03"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Debug3"
+                android:textColor="#FFFFFF"
+                android:background="@color/colorPrimary"
+                android:layout_margin="5dp" />
+
+        </LinearLayout>
+    </LinearLayout>
 
     <LinearLayout
         android:id="@+id/layout_debug_text"

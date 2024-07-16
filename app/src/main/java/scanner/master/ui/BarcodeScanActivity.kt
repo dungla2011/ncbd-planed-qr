@@ -1,5 +1,6 @@
 package scanner.master.ui
 
+import WebAppInterface
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
@@ -20,6 +21,7 @@ import android.view.View
 import android.webkit.WebSettings
 import android.webkit.WebView
 import android.webkit.WebViewClient
+import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.annotation.RequiresApi
@@ -29,6 +31,7 @@ import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.Preview
 import androidx.camera.core.TorchState
 import androidx.camera.lifecycle.ProcessCameraProvider
+import androidx.camera.view.PreviewView
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.Observer
 import com.google.common.util.concurrent.ListenableFuture
@@ -48,10 +51,19 @@ import java.time.format.DateTimeFormatter
 
 const val ARG_SCANNING_SDK = "scanning_SDK"
 
-class BarcodeScanningActivity : AppCompatActivity() {
+
+interface CameraVisibilityController {
+    fun hideCamera()
+    fun showCamera()
+    fun debug1()
+}
+
+class BarcodeScanningActivity : AppCompatActivity(), CameraVisibilityController {
+
+    public var cameraZone: LinearLayout? = null
 
     private var lastScanTime: Long = 0
-    private val delayMillis: Long = 1000 // 1 second delay
+    private val delayMillis: Long = 5000 // 1 second delay
 
     var lastPlayTimeAudio: Long = 0
     val delayMillisAudio: Long = 2000 // 3 second delay
@@ -65,6 +77,9 @@ class BarcodeScanningActivity : AppCompatActivity() {
     private lateinit var connectivityLiveData:ConnectivityLiveData
     var arr_data = ArrayList<String>()
     private var lensFacing = CameraSelector.LENS_FACING_FRONT
+
+    private var webZone: LinearLayout? = null
+    private var camZone: LinearLayout? = null
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -84,6 +99,33 @@ class BarcodeScanningActivity : AppCompatActivity() {
         binding.overlay.post {
             binding.overlay.setViewFinder()
         }
+
+        cameraZone = findViewById<LinearLayout>(R.id.cameraZone)
+//        val webZone = findViewById<LinearLayout>(R.id.webZone)
+//        webZone.visibility = View.GONE
+
+        val btnDebug01 = findViewById<Button>(R.id.btnDebug01)
+        btnDebug01.setOnClickListener {
+            // Thực hiện hành động khi nút được nhấn
+//            Toast.makeText(this, "btnDebug01 được nhấn", Toast.LENGTH_SHORT).show()
+            showCamera()
+        }
+        val btnDebug02 = findViewById<Button>(R.id.btnDebug02)
+        btnDebug02.setOnClickListener {
+            // Thực hiện hành động khi nút được nhấn
+//            Toast.makeText(this, "btnDebug01 được nhấn", Toast.LENGTH_SHORT).show()
+            hideCamera()
+        }
+
+        val btnDebug03 = findViewById<Button>(R.id.btnDebug03)
+        btnDebug03.setOnClickListener {
+            // Thực hiện hành động khi nút được nhấn
+//            Toast.makeText(this, "btnDebug01 được nhấn", Toast.LENGTH_SHORT).show()
+//            hideCamera()
+        }
+
+        camZone = findViewById<LinearLayout>(R.id.cameraZone)
+        webZone = findViewById<LinearLayout>(R.id.webZone)
     }
 
     @SuppressLint("SetJavaScriptEnabled")
@@ -94,6 +136,8 @@ class BarcodeScanningActivity : AppCompatActivity() {
             //java.lang.IllegalArgumentException: Trying to create use case mediator with destroyed lifecycle.
             return
         }
+        
+
 
         cameraProvider?.unbindAll()
 
@@ -137,6 +181,8 @@ class BarcodeScanningActivity : AppCompatActivity() {
         //binding.webview.visibility = View.GONE;
         //switch the analyzers here, i.e. MLKitBarcodeAnalyzer, ZXingBarcodeAnalyzer
         class ScanningListener : ScanningResultListener {
+
+            //phát hiện ra chữ:
             override fun onScanned(result: String) {
 
                 val currentTime1 = System.currentTimeMillis()
@@ -165,7 +211,6 @@ class BarcodeScanningActivity : AppCompatActivity() {
                         binding.edtResult.setText(data_rs);
                     }
                 }
-
 
                 binding.webview.evaluateJavascript(
                     "(function() { return document.getElementById('inputAllValx').value; })();"
@@ -235,11 +280,19 @@ class BarcodeScanningActivity : AppCompatActivity() {
                     //Load xong, thì chạy js ở trên
                     binding.webview.loadUrl(newUrl)
 
+                    // Gọi hàm hideCamera
+                    hideCamera()
 
+// Tạo một đối tượng Handler và sử dụng phương thức postDelayed để đặt lệnh chờ
+                    Handler(Looper.getMainLooper()).postDelayed({
+                        // Gọi hàm showCamera sau khi đã chờ 5 giây
+                        showCamera()
 
+                        //Load lại trang để về trang intro
+                        binding.webview.loadUrl("https://ncbd.mytree.vn/tool1/_site/event_mng/qr-scaned-post.php")
 
+                    }, 5000) // Thời gian chờ là 5000 milliseconds, tương đương với 5 giây
                 }
-
             }
         }
 
@@ -310,6 +363,7 @@ class BarcodeScanningActivity : AppCompatActivity() {
             }
         })
         /** Layout of webview screen View  */
+        binding.webview.addJavascriptInterface(WebAppInterface(this, this), "Android")
         binding.webview.isFocusable = true
         binding.webview.isFocusableInTouchMode = true
         binding.webview.settings.javaScriptEnabled = true
@@ -321,6 +375,7 @@ class BarcodeScanningActivity : AppCompatActivity() {
         binding.webview.settings.databaseEnabled = true
         // this force use chromeWebClient
         binding.webview.settings.setSupportMultipleWindows(false)
+
         binding.webview.webViewClient = object : WebViewClient() {
             override fun shouldOverrideUrlLoading(view: WebView, url: String?): Boolean {
 
@@ -329,7 +384,6 @@ class BarcodeScanningActivity : AppCompatActivity() {
                 view.loadUrl(url);
                 return true
             }
-
 
             override fun onPageStarted(view: WebView, url: String, favicon: Bitmap?) {
                 super.onPageStarted(view, url, favicon)
@@ -345,8 +399,6 @@ class BarcodeScanningActivity : AppCompatActivity() {
             }
         }
 
-
-
     }
 
     override fun onDestroy() {
@@ -354,5 +406,54 @@ class BarcodeScanningActivity : AppCompatActivity() {
         // Shut down our background executor
         cameraExecutor.shutdown()
     }
+
+    override fun hideCamera() {
+//        Toast.makeText(this, "Call hideCamera1", Toast.LENGTH_SHORT).show()
+//        val webZone = findViewById<LinearLayout>(R.id.webZone)
+//        val camZone = findViewById<LinearLayout>(R.id.cameraZone)
+        camZone?.visibility = View.GONE
+
+//        var params2 = webZone?.layoutParams as LinearLayout.LayoutParams
+//        params2.weight = 3f // Thay đổi giá trị này theo nhu cầu của bạn
+//        webZone?.layoutParams = params2
+//        webZone?.requestLayout()
+//        webZone?.requestLayout()
+//        var topLayout = findViewById<LinearLayout>(R.id.topLayout)
+//        topLayout.requestLayout()
+
+    }
+
+    override fun showCamera() {
+//        Toast.makeText(this, "Call showCam1", Toast.LENGTH_SHORT).show()
+//        var webZone = findViewById<LinearLayout>(R.id.webZone)
+//        var camZone = findViewById<LinearLayout>(R.id.cameraZone)
+
+//        webZone.visibility = View.GONE
+        camZone?.visibility = View.VISIBLE
+
+//        var params = webZone.layoutParams as LinearLayout.LayoutParams
+//        params.weight = 0F // Thay đổi giá trị này theo nhu cầu của bạn
+//        webZone.layoutParams = params
+////
+////        webZone.visibility = View.GONE
+//       binding.webview.visibility = View.GONE
+////
+////        camZone.visibility = View.VISIBLE
+//
+////
+//        var params2 = camZone.layoutParams as LinearLayout.LayoutParams
+//        params2.weight = 1f // Thay đổi giá trị này theo nhu cầu của bạn
+//        camZone.layoutParams = params2
+//        camZone.requestLayout()
+//        webZone.requestLayout()
+//        var topLayout = findViewById<LinearLayout>(R.id.topLayout)
+//        topLayout.requestLayout()
+
+    }
+
+    override fun debug1() {
+        showCamera()
+    }
+
 
 }

@@ -13,6 +13,7 @@ import androidx.core.content.ContextCompat
 import scanner.master.databinding.ActivityMainBinding
 
 
+
 class MainActivity : AppCompatActivity() {
 
     private val cameraPermissionRequestCode = 1
