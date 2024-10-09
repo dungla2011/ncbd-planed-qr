@@ -1,15 +1,19 @@
 package scanner.master.ui
 
 import android.Manifest
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Bundle
 import android.provider.Settings
 import android.view.LayoutInflater
+import android.widget.Button
+import android.widget.EditText
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import scanner.master.R
 import scanner.master.databinding.ActivityMainBinding
 
 
@@ -26,6 +30,25 @@ class MainActivity : AppCompatActivity() {
         binding.btnScan.setOnClickListener {
             startScanning()
         }
+
+
+        // Trong file Activity của bạn
+        val edtDomain = findViewById<EditText>(R.id.edtDomain)
+        val btnSetDomain = findViewById<Button>(R.id.btnSetDomain)
+
+        val sharedPreferences = getSharedPreferences("EventNcbd", Context.MODE_PRIVATE)
+
+// Đặt OnClickListener cho btnSetDomain
+        btnSetDomain.setOnClickListener {
+            val domain = edtDomain.text.toString()
+            val editor = sharedPreferences.edit()
+            editor.putString("domain", domain)
+            editor.apply()
+        }
+
+        // Khi ứng dụng khởi động, lấy giá trị domain từ SharedPreferences và đặt vào EditText
+        val domain = sharedPreferences.getString("domain", "")
+        edtDomain.setText(domain)
     }
 
     private fun startScanning() {

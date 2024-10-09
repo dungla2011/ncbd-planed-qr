@@ -81,11 +81,14 @@ class BarcodeScanningActivity : AppCompatActivity(), CameraVisibilityController 
     private var webZone: LinearLayout? = null
     private var camZone: LinearLayout? = null
 
+    private var domainx: String? = null
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityBarcodeScanningBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
 
         cameraProviderFuture = ProcessCameraProvider.getInstance(this)
         // Initialize our background executor
@@ -126,6 +129,13 @@ class BarcodeScanningActivity : AppCompatActivity(), CameraVisibilityController 
 
         camZone = findViewById<LinearLayout>(R.id.cameraZone)
         webZone = findViewById<LinearLayout>(R.id.webZone)
+
+        var sharedPreferences = getSharedPreferences("EventNcbd", Context.MODE_PRIVATE)
+        domainx = sharedPreferences.getString("domain", "")
+
+        if(domainx?.length == 0){
+            Toast.makeText(this, "Domain is empty", Toast.LENGTH_LONG).show()
+        }
     }
 
     @SuppressLint("SetJavaScriptEnabled")
@@ -190,6 +200,8 @@ class BarcodeScanningActivity : AppCompatActivity(), CameraVisibilityController 
                     return;
                 }
 
+
+
                 lastScanTime = currentTime1
 
                 //binding.txtLayout.visibility = View.VISIBLE;
@@ -219,11 +231,14 @@ class BarcodeScanningActivity : AppCompatActivity(), CameraVisibilityController 
                     var value1 = value.replace("\"", "")
                     Log.d("WebView123", "Value of myInput: $value1")
 
+                    var sharedPreferences = getSharedPreferences("EventNcbd", Context.MODE_PRIVATE)
+                    val dmx = sharedPreferences.getString("domain", "")
+
                     ///////////////////////////////////
                     //luôn cho load view ở đây, để sau khi lấy được giá trị js thì load lại
                     //Nếu đặt ngoài thì có thể ko lấy được val1...,
                     // vì đoạn này sẽ bị chạy qua trước khi js lấy được giá trị
-                    var newUrl = "https://ncbd.mytree.vn/tool1/_site/event_mng/qr-scaned-post.php?currentTime1=$currentTime1&inputAllValx=$value1&qrs=$result";
+                    var newUrl = "https://" + dmx + "/tool1/_site/event_mng/qr-scaned-post.php?currentTime1=$currentTime1&inputAllValx=$value1&qrs=$result";
 //                    newUrl = "https://ncbd.mytree.vn/tool1/_site/event_mng/qr-scaned-post.php?qrs=data=37534259505b560507060677505a565e5b1954585a&inputAllValx=2|2";
 //                    binding.webview.loadUrl(newUrl)
 
@@ -289,7 +304,7 @@ class BarcodeScanningActivity : AppCompatActivity(), CameraVisibilityController 
                         showCamera()
 
                         //Load lại trang để về trang intro
-                        binding.webview.loadUrl("https://ncbd.mytree.vn/tool1/_site/event_mng/qr-scaned-post.php")
+                        binding.webview.loadUrl("https://"+ dmx +"/tool1/_site/event_mng/qr-scaned-post.php")
 
                     }, 5000) // Thời gian chờ là 5000 milliseconds, tương đương với 5 giây
                 }
@@ -349,12 +364,15 @@ class BarcodeScanningActivity : AppCompatActivity(), CameraVisibilityController 
     @SuppressLint("SetJavaScriptEnabled")
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     private fun requestWebView() {
+        var sharedPreferences = getSharedPreferences("EventNcbd", Context.MODE_PRIVATE)
+        val dmx = sharedPreferences.getString("domain", "")
+
         connectivityLiveData= ConnectivityLiveData(application)
         connectivityLiveData.observe(this, Observer {isAvailable->
             if(isAvailable){
                 //binding.lnLow.visibility = View.GONE
                 //binding.webview.visibility = View.VISIBLE
-                binding.webview.loadUrl("https://ncbd.mytree.vn/tool1/_site/event_mng/qr-scaned-post.php")
+                binding.webview.loadUrl("https://"+ dmx +"/tool1/_site/event_mng/qr-scaned-post.php")
             }else{
                 //binding.webview.visibility = View.GONE
                 //binding.lnLow.visibility = View.VISIBLE

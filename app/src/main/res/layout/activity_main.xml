@@ -20,12 +20,47 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/tvVer"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:padding="@dimen/_16sdp"
+        android:textSize="@dimen/_16sdp"
+        android:text="Ver.9-10-24"
+        android:gravity="center_horizontal"
+        android:textAppearance="@style/TextAppearance.MaterialComponents.Headline1"
+        android:textColor="@android:color/black"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/tvTitle" />
+
+    <EditText
+        android:id="@+id/edtDomain"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Enter domain"
+        android:gravity="center"
+        android:textColor="@android:color/darker_gray"
+        app:layout_constraintTop_toBottomOf="@+id/tvVer" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnSetDomain"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Set Domain"
+        android:backgroundTint="@android:color/darker_gray"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/edtDomain" />
+
     <LinearLayout
         android:id="@+id/LinearLayout1"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:gravity="center"
         android:orientation="vertical" >
+
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnScan"
             android:layout_width="wrap_content"
@@ -37,7 +72,7 @@
             app:layout_constraintStart_toStartOf="parent"
             style="@style/Widget.MaterialComponents.Button.OutlinedButton.Icon"
             />
-    </LinearLayout>
 
+    </LinearLayout>
 
 </androidx.constraintlayout.motion.widget.MotionLayout>
