@@ -298,7 +298,17 @@ class BarcodeScanningActivity : AppCompatActivity(), CameraVisibilityController 
                     // Gọi hàm hideCamera
                     hideCamera()
 
-// Tạo một đối tượng Handler và sử dụng phương thức postDelayed để đặt lệnh chờ
+                    // Get the time delay from SharedPreferences and convert it to an Int
+                    val timeDelayString = sharedPreferences.getString("edtDelayTimeAfterScanQr", "1")
+                    var timeDelay = timeDelayString?.toLongOrNull() ?: 0
+
+                    if(timeDelay.toInt() == 0)
+                        timeDelay = 3000
+                    else
+                        timeDelay *= 1000
+
+
+                    // Tạo một đối tượng Handler và sử dụng phương thức postDelayed để đặt lệnh chờ
                     Handler(Looper.getMainLooper()).postDelayed({
                         // Gọi hàm showCamera sau khi đã chờ 5 giây
                         showCamera()
@@ -306,7 +316,7 @@ class BarcodeScanningActivity : AppCompatActivity(), CameraVisibilityController 
                         //Load lại trang để về trang intro
                         binding.webview.loadUrl("https://"+ dmx +"/tool1/_site/event_mng/qr-scaned-post.php")
 
-                    }, 5000) // Thời gian chờ là 5000 milliseconds, tương đương với 5 giây
+                    }, timeDelay) // Thời gian chờ là 5000 milliseconds, tương đương với 5 giây
                 }
             }
         }
@@ -339,6 +349,13 @@ class BarcodeScanningActivity : AppCompatActivity(), CameraVisibilityController 
             } else {
                 myLinearLayout.visibility = View.VISIBLE
             }
+        }
+
+        binding.showHideConfig.setOnClickListener {
+            Toast.makeText(this, "Show/Hide Config", Toast.LENGTH_SHORT).show()
+
+
+
         }
 
 

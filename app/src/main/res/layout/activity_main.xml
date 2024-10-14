@@ -44,15 +44,24 @@
         android:textColor="@android:color/darker_gray"
         app:layout_constraintTop_toBottomOf="@+id/tvVer" />
 
+    <EditText
+        android:id="@+id/edtDelayTimeAfterScanQr"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Enter time Delay after QR Scan"
+        android:gravity="center"
+        android:textColor="@android:color/darker_gray"
+        app:layout_constraintTop_toBottomOf="@+id/edtDomain" />
+
     <com.google.android.material.button.MaterialButton
         android:id="@+id/btnSetDomain"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Set Domain"
+        android:text="Save Config"
         android:backgroundTint="@android:color/darker_gray"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/edtDomain" />
+        app:layout_constraintTop_toBottomOf="@+id/edtDelayTimeAfterScanQr" />
 
     <LinearLayout
         android:id="@+id/LinearLayout1"

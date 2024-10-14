@@ -34,6 +34,7 @@ class MainActivity : AppCompatActivity() {
 
         // Trong file Activity của bạn
         val edtDomain = findViewById<EditText>(R.id.edtDomain)
+        val edtDelayTimeAfterScanQr = findViewById<EditText>(R.id.edtDelayTimeAfterScanQr)
         val btnSetDomain = findViewById<Button>(R.id.btnSetDomain)
 
         val sharedPreferences = getSharedPreferences("EventNcbd", Context.MODE_PRIVATE)
@@ -41,14 +42,19 @@ class MainActivity : AppCompatActivity() {
 // Đặt OnClickListener cho btnSetDomain
         btnSetDomain.setOnClickListener {
             val domain = edtDomain.text.toString()
+            val edtDelayTimeAfterScanQr = edtDelayTimeAfterScanQr.text.toString()
             val editor = sharedPreferences.edit()
             editor.putString("domain", domain)
+            editor.putString("edtDelayTimeAfterScanQr", edtDelayTimeAfterScanQr)
             editor.apply()
         }
 
         // Khi ứng dụng khởi động, lấy giá trị domain từ SharedPreferences và đặt vào EditText
         val domain = sharedPreferences.getString("domain", "")
         edtDomain.setText(domain)
+        val timeDelay = sharedPreferences.getString("edtDelayTimeAfterScanQr", "")
+        edtDomain.setText(timeDelay)
+
     }
 
     private fun startScanning() {
