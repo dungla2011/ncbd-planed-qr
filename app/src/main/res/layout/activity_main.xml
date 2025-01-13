@@ -27,7 +27,7 @@
         android:layout_height="wrap_content"
         android:padding="@dimen/_16sdp"
         android:textSize="@dimen/_16sdp"
-        android:text="Ver.9-10-24"
+        android:text="Ver.13.01.25"
         android:gravity="center_horizontal"
         android:textAppearance="@style/TextAppearance.MaterialComponents.Headline1"
         android:textColor="@android:color/black"

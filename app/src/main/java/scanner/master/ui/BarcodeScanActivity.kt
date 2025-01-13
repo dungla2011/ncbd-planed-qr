@@ -1,14 +1,10 @@
-package scanner.master.ui
+﻿package scanner.master.ui
 
 import WebAppInterface
 import android.annotation.SuppressLint
 import android.content.Context
-import android.content.Intent
 import android.graphics.Bitmap
-import android.media.AudioAttributes
-import android.media.AudioManager
 import android.media.MediaPlayer
-import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.os.Handler
@@ -29,15 +25,10 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.Preview
-import androidx.camera.core.TorchState
 import androidx.camera.lifecycle.ProcessCameraProvider
-import androidx.camera.view.PreviewView
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.Observer
 import com.google.common.util.concurrent.ListenableFuture
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
 import scanner.master.R
 import scanner.master.analyzer.BarcodeAnalyzer
 import scanner.master.analyzer.ScanningResultListener
@@ -219,7 +210,7 @@ class BarcodeScanningActivity : AppCompatActivity(), CameraVisibilityController 
                     if(counter == 0){
                         counter = 1;
                         val currentTime = LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm:ss"));
-                        data_rs = "$currentTime - $result\n$data_rs";
+                        data_rs = "$currentTime - Scaned: $result\n$data_rs";
                         binding.edtResult.setText(data_rs);
                     }
                 }
@@ -258,6 +249,12 @@ class BarcodeScanningActivity : AppCompatActivity(), CameraVisibilityController 
                                 // mp3Link chính là link mp3 của phần tử audio
                                 Log.d("WebView1", "MP3 link: $mp3Link1")
 
+                                ///Log debug:
+                                var data_rs = binding.edtResult.getText().toString();
+                                val currentTime1 = System.currentTimeMillis();
+                                data_rs = "$currentTime1 - mp3Link1: $mp3Link1\n$data_rs";
+                                binding.edtResult.setText(data_rs);
+
                                 val currentTime = System.currentTimeMillis()
                                 if (currentTime - lastPlayTimeAudio < delayMillisAudio) {
                                     // It has not been 5 seconds since the last play, do not play the mp3
@@ -273,6 +270,14 @@ class BarcodeScanningActivity : AppCompatActivity(), CameraVisibilityController 
                                     }
                                     if(mp3Link1.contains("warning.mp3")){
                                         mediaPlayer = MediaPlayer.create(binding.webview.context, R.raw.warning)
+                                        mediaPlayer.start() // no need to call prepare(); create() does that for you
+                                    }
+                                    if(mp3Link1.contains("ky_nhan_vn.mp3")){
+                                        mediaPlayer = MediaPlayer.create(binding.webview.context, R.raw.ky_nhan_vn)
+                                        mediaPlayer.start() // no need to call prepare(); create() does that for you
+                                    }
+                                    if(mp3Link1.contains("ky_nhan_en.mp3")){
+                                        mediaPlayer = MediaPlayer.create(binding.webview.context, R.raw.ky_nhan_en1)
                                         mediaPlayer.start() // no need to call prepare(); create() does that for you
                                     }
 
