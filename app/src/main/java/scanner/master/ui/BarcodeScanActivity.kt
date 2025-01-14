@@ -263,23 +263,25 @@ class BarcodeScanningActivity : AppCompatActivity(), CameraVisibilityController 
                                 // It has been 5 seconds since the last play, update the last play time and play the mp3
                                 lastPlayTimeAudio = currentTime
                                 try {
-                                    var mediaPlayer: MediaPlayer;
-                                    if(mp3Link1.contains("up.mp3")){
-                                        mediaPlayer = MediaPlayer.create(binding.webview.context, R.raw.up)
-                                        mediaPlayer.start() // no need to call prepare(); create() does that for you
-                                    }
-                                    if(mp3Link1.contains("warning.mp3")){
-                                        mediaPlayer = MediaPlayer.create(binding.webview.context, R.raw.warning)
-                                        mediaPlayer.start() // no need to call prepare(); create() does that for you
-                                    }
-                                    if(mp3Link1.contains("ky_nhan_vn.mp3")){
-                                        mediaPlayer = MediaPlayer.create(binding.webview.context, R.raw.ky_nhan_vn)
-                                        mediaPlayer.start() // no need to call prepare(); create() does that for you
-                                    }
-                                    if(mp3Link1.contains("ky_nhan_en.mp3")){
-                                        mediaPlayer = MediaPlayer.create(binding.webview.context, R.raw.ky_nhan_en1)
-                                        mediaPlayer.start() // no need to call prepare(); create() does that for you
-                                    }
+                                    Thread {
+                                        var mediaPlayer: MediaPlayer
+                                        if (mp3Link1.contains("up.mp3")) {
+                                            mediaPlayer = MediaPlayer.create(binding.webview.context, R.raw.up)
+                                            mediaPlayer.start() // no need to call prepare(); create() does that for you
+                                        }
+                                        if (mp3Link1.contains("warning.mp3")) {
+                                            mediaPlayer = MediaPlayer.create(binding.webview.context, R.raw.warning)
+                                            mediaPlayer.start() // no need to call prepare(); create() does that for you
+                                        }
+                                        if (mp3Link1.contains("ky_nhan_vn")) {
+                                            mediaPlayer = MediaPlayer.create(binding.webview.context, R.raw.ky_nhan_vn)
+                                            mediaPlayer.start() // no need to call prepare(); create() does that for you
+                                        }
+                                        if (mp3Link1.contains("ky_nhan_en")) {
+                                            mediaPlayer = MediaPlayer.create(binding.webview.context, R.raw.ky_nhan_en)
+                                            mediaPlayer.start() // no need to call prepare(); create() does that for you
+                                        }
+                                    }.start()
 
 //                            val uri = Uri.parse("android.resource://${this.packageName}/" + R.raw.up)
 //                            val mediaPlayer: MediaPlayer? = MediaPlayer().apply {
