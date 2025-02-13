@@ -53,8 +53,7 @@ class MainActivity : AppCompatActivity() {
         val domain = sharedPreferences.getString("domain", "")
         edtDomain.setText(domain)
         val timeDelay = sharedPreferences.getString("edtDelayTimeAfterScanQr", "")
-        edtDomain.setText(timeDelay)
-
+        edtDelayTimeAfterScanQr.setText(timeDelay)
     }
 
     private fun startScanning() {

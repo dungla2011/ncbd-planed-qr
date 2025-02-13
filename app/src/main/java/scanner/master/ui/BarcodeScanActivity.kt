@@ -4,7 +4,9 @@ import WebAppInterface
 import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Bitmap
+import android.media.AudioManager
 import android.media.MediaPlayer
+import android.media.SoundPool
 import android.os.Build
 import android.os.Bundle
 import android.os.Handler
@@ -28,6 +30,7 @@ import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.Observer
+import com.google.android.material.textfield.TextInputEditText
 import com.google.common.util.concurrent.ListenableFuture
 import scanner.master.R
 import scanner.master.analyzer.BarcodeAnalyzer
@@ -35,10 +38,11 @@ import scanner.master.analyzer.ScanningResultListener
 import scanner.master.databinding.ActivityBarcodeScanningBinding
 import scanner.master.ui.custom.ConnectivityLiveData
 import java.io.IOException
-import java.util.concurrent.ExecutorService
-import java.util.concurrent.Executors
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
+import java.util.concurrent.ExecutorService
+import java.util.concurrent.Executors
+
 
 const val ARG_SCANNING_SDK = "scanning_SDK"
 
@@ -74,12 +78,19 @@ class BarcodeScanningActivity : AppCompatActivity(), CameraVisibilityController 
 
     private var domainx: String? = null
 
+    private lateinit var edtResult: TextInputEditText
+
+    var counter = 0;
+
+    private var soundPool: SoundPool? = null
+    private val soundMap = mutableMapOf<String, Int>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityBarcodeScanningBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        initSoundPool()
 
         cameraProviderFuture = ProcessCameraProvider.getInstance(this)
         // Initialize our background executor
@@ -93,6 +104,8 @@ class BarcodeScanningActivity : AppCompatActivity(), CameraVisibilityController 
         binding.overlay.post {
             binding.overlay.setViewFinder()
         }
+
+        edtResult = findViewById(R.id.edtResult)
 
         cameraZone = findViewById<LinearLayout>(R.id.cameraZone)
 //        val webZone = findViewById<LinearLayout>(R.id.webZone)
@@ -127,6 +140,75 @@ class BarcodeScanningActivity : AppCompatActivity(), CameraVisibilityController 
         if(domainx?.length == 0){
             Toast.makeText(this, "Domain is empty", Toast.LENGTH_LONG).show()
         }
+    }
+
+    private fun playSound(mp3Link1: String) {
+
+        logDebug("Play sound 3")
+
+//        val currentTime = System.currentTimeMillis()
+//        if (currentTime - lastPlayTimeAudio < delayMillisAudio) {
+//            logDebug("Skip playing - too soon after last play")
+//            return
+//        }
+
+        try {
+            soundPool?.let { pool ->
+                val soundId = when {
+                    mp3Link1.contains("ky_nhan_vn") -> {
+                        logDebug("Playing ky_nhan_vn...")
+                        soundMap["ky_nhan_vn"]
+                    }
+                    mp3Link1.contains("up.mp3") -> {
+                        logDebug("Playing up...")
+                        soundMap["up"]
+                    }
+                    mp3Link1.contains("warning.mp3") -> {
+                        logDebug("Playing warning...")
+                        soundMap["warning"]
+                    }
+                    mp3Link1.contains("ky_nhan_en") -> {
+                        logDebug("Playing ky_nhan_en...")
+                        soundMap["ky_nhan_en"]
+                    }
+                    else -> null
+                }
+
+                soundId?.let {
+                    pool.play(it, 1f, 1f, 1, 0, 1f)
+//                    lastPlayTimeAudio = currentTime
+                }
+            }
+        } catch (e: Exception) {
+            Log.e("SoundPool", "Error playing sound", e)
+            logDebug("Error playing sound: ${e.message}")
+        }
+    }
+
+
+    private fun initSoundPool() {
+        soundPool = SoundPool(5, AudioManager.STREAM_MUSIC, 0)
+
+        // Load tất cả sounds một lần khi khởi tạo
+        soundPool?.setOnLoadCompleteListener { _, sampleId, status ->
+            if (status == 0) {
+                logDebug("Sound $sampleId loaded successfully")
+            } else {
+                logDebug("Error loading sound $sampleId")
+            }
+        }
+
+        soundMap["ky_nhan_vn"] = soundPool?.load(this, R.raw.ky_nhan_vn, 1) ?: 0
+        soundMap["up"] = soundPool?.load(this, R.raw.up, 1) ?: 0
+        soundMap["warning"] = soundPool?.load(this, R.raw.warning, 1) ?: 0
+        soundMap["ky_nhan_en"] = soundPool?.load(this, R.raw.ky_nhan_en, 1) ?: 0
+    }
+
+    fun logDebug(log: String) {
+        val currentTime = LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm:ss.SSS"));
+        var data_rs = edtResult.getText().toString();
+        data_rs = "$currentTime - $log\n$data_rs";
+        edtResult.setText(data_rs)
     }
 
     @SuppressLint("SetJavaScriptEnabled")
@@ -169,6 +251,7 @@ class BarcodeScanningActivity : AppCompatActivity(), CameraVisibilityController 
         orientationEventListener.enable()
 //        binding.txtLayout.setHint("Kết quả: ")
         requestWebView()
+
         fun repeatDelayed(delay: Long, action: () -> Unit): Handler {
             val handler = Handler(Looper.getMainLooper())
             handler.postDelayed(object : Runnable {
@@ -179,6 +262,7 @@ class BarcodeScanningActivity : AppCompatActivity(), CameraVisibilityController 
             }, delay)
             return handler
         }
+
         //binding.webview.visibility = View.GONE;
         //switch the analyzers here, i.e. MLKitBarcodeAnalyzer, ZXingBarcodeAnalyzer
         class ScanningListener : ScanningResultListener {
@@ -192,28 +276,22 @@ class BarcodeScanningActivity : AppCompatActivity(), CameraVisibilityController 
                 }
 
 
-
                 lastScanTime = currentTime1
 
                 //binding.txtLayout.visibility = View.VISIBLE;
                 //binding.webview.visibility = View.VISIBLE;
                 val delay = 5000L
-                var data_rs = binding.edtResult.getText().toString();
-                var counter = 0;
+
                 if(counter > 0){
-                    repeatDelayed(delay) {
-                        val currentTime = LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm:ss"));
-                        data_rs = "$currentTime - $result\n$data_rs"       ;
-                        binding.edtResult.setText(data_rs)
-                    }
-                }else{
-                    if(counter == 0){
-                        counter = 1;
-                        val currentTime = LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm:ss"));
-                        data_rs = "$currentTime - Scaned: $result\n$data_rs";
-                        binding.edtResult.setText(data_rs);
-                    }
+//                    repeatDelayed(delay) {
+//                        logDebug("resule1 :  $result")
+//                    }
+                }else
+                {
+                    counter++;
+
                 }
+                logDebug("Found QR :  $result")
 
                 binding.webview.evaluateJavascript(
                     "(function() { return document.getElementById('inputAllValx').value; })();"
@@ -233,6 +311,11 @@ class BarcodeScanningActivity : AppCompatActivity(), CameraVisibilityController 
 //                    newUrl = "https://ncbd.mytree.vn/tool1/_site/event_mng/qr-scaned-post.php?qrs=data=37534259505b560507060677505a565e5b1954585a&inputAllValx=2|2";
 //                    binding.webview.loadUrl(newUrl)
 
+                    logDebug("checkQR Found URL: $newUrl")
+//                    val currentTime1 = LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm:ss.SSS"));
+//                    data_rs = "$currentTime1 - newUrl: $newUrl\n$data_rs";
+//                    binding.edtResult.setText(data_rs);
+
 
                     //Đưa vào đây để đảm bảo webview load xong mới excute js:
                     binding.webview.webViewClient = object : WebViewClient() {
@@ -247,41 +330,95 @@ class BarcodeScanningActivity : AppCompatActivity(), CameraVisibilityController 
                                 //Nếu thấy link mp3, thì sẽ play
                                 var mp3Link1 = mp3Link.replace("\"", "")
                                 // mp3Link chính là link mp3 của phần tử audio
-                                Log.d("WebView1", "MP3 link: $mp3Link1")
+                                Log.d("WebView3", "MP3 link: $mp3Link1")
 
-                                ///Log debug:
-                                var data_rs = binding.edtResult.getText().toString();
-                                val currentTime1 = System.currentTimeMillis();
-                                data_rs = "$currentTime1 - mp3Link1: $mp3Link1\n$data_rs";
-                                binding.edtResult.setText(data_rs);
+                                logDebug("mp3Link2: $mp3Link1")
+//
+//                                val currentTime = System.currentTimeMillis()
+//                                if (currentTime - lastPlayTimeAudio < delayMillisAudio) {
+//                                    // It has not been 5 seconds since the last play, do not play the mp3
+//                                    logDebug("- NOT play mp3 because over time delay - $currentTime - $lastPlayTimeAudio < $delayMillisAudio")
+//                                    return@evaluateJavascript
+//                                }
 
-                                val currentTime = System.currentTimeMillis()
-                                if (currentTime - lastPlayTimeAudio < delayMillisAudio) {
-                                    // It has not been 5 seconds since the last play, do not play the mp3
-                                    return@evaluateJavascript
-                                }
+                                logDebug("- Play  now6 -")
                                 // It has been 5 seconds since the last play, update the last play time and play the mp3
-                                lastPlayTimeAudio = currentTime
+
+                                playSound(mp3Link1)
+
                                 try {
+//
+//
+//                                    Thread {
+//                                        val soundPool = SoundPool(5, AudioManager.STREAM_MUSIC, 0)
+//                                        soundPool.setOnLoadCompleteListener { soundPool, sampleId, status ->
+//                                            if (status == 0) {
+//                                                logDebug("Sound loaded successfully 3000")
+//                                                // Play the sound only after it's successfully loaded
+//                                                soundPool.play(sampleId, 1f, 1f, 0, 0, 1f)
+//
+//                                                // Add a delay before releasing the SoundPool
+//                                                Thread.sleep(3000) // Wait for 1 second to allow sound to play
+//                                                soundPool.release()
+//                                            } else {
+//                                                logDebug("Error loading sound")
+//                                                soundPool.release()
+//                                            }
+//                                        }
+//
+//                                        // Load the appropriate sound based on the mp3Link1
+//                                        when {
+//                                            mp3Link1.contains("ky_nhan_vn") -> {
+//                                                logDebug("Found2 ky_nhan_vn ...")
+//                                                soundPool.load(binding.webview.context, R.raw.ky_nhan_vn, 1)
+//                                            }
+//                                            mp3Link1.contains("up.mp3") -> {
+//                                                logDebug("Found2 up ...")
+//                                                soundPool.load(binding.webview.context, R.raw.up, 1)
+//                                            }
+//                                            mp3Link1.contains("warning.mp3") -> {
+//                                                logDebug("Found2 warning ...")
+//                                                soundPool.load(binding.webview.context, R.raw.warning, 1)
+//                                            }
+//                                            mp3Link1.contains("ky_nhan_en") -> {
+//                                                logDebug("Found2 ky_nhan_en ...")
+//                                                soundPool.load(binding.webview.context, R.raw.ky_nhan_en, 1)
+//                                            }
+//                                        }
+//                                    }.start()
+
+
+                                    /*
                                     Thread {
                                         var mediaPlayer: MediaPlayer
-                                        if (mp3Link1.contains("up.mp3")) {
-                                            mediaPlayer = MediaPlayer.create(binding.webview.context, R.raw.up)
-                                            mediaPlayer.start() // no need to call prepare(); create() does that for you
-                                        }
-                                        if (mp3Link1.contains("warning.mp3")) {
-                                            mediaPlayer = MediaPlayer.create(binding.webview.context, R.raw.warning)
-                                            mediaPlayer.start() // no need to call prepare(); create() does that for you
-                                        }
+                                        logDebug(" Start Thread ...")
                                         if (mp3Link1.contains("ky_nhan_vn")) {
+                                            logDebug(" Found  ky_nhan_vn ...")
                                             mediaPlayer = MediaPlayer.create(binding.webview.context, R.raw.ky_nhan_vn)
                                             mediaPlayer.start() // no need to call prepare(); create() does that for you
+                                            lastPlayTimeAudio = currentTime
+                                        }
+                                        if (mp3Link1.contains("up.mp3")) {
+                                            logDebug(" Found  up ...")
+                                            mediaPlayer = MediaPlayer.create(binding.webview.context, R.raw.up)
+                                            mediaPlayer.start() // no need to call prepare(); create() does that for you
+                                            lastPlayTimeAudio = currentTime
+                                        }
+                                        if (mp3Link1.contains("warning.mp3")) {
+                                            logDebug(" Found  warning ...")
+                                            mediaPlayer = MediaPlayer.create(binding.webview.context, R.raw.warning)
+                                            mediaPlayer.start() // no need to call prepare(); create() does that for you
+                                            lastPlayTimeAudio = currentTime
                                         }
                                         if (mp3Link1.contains("ky_nhan_en")) {
+                                            logDebug(" Found  ky_nhan_en ...")
                                             mediaPlayer = MediaPlayer.create(binding.webview.context, R.raw.ky_nhan_en)
                                             mediaPlayer.start() // no need to call prepare(); create() does that for you
+                                            lastPlayTimeAudio = currentTime
                                         }
                                     }.start()
+
+                                     */
 
 //                            val uri = Uri.parse("android.resource://${this.packageName}/" + R.raw.up)
 //                            val mediaPlayer: MediaPlayer? = MediaPlayer().apply {
@@ -445,6 +582,10 @@ class BarcodeScanningActivity : AppCompatActivity(), CameraVisibilityController 
 
     override fun onDestroy() {
         super.onDestroy()
+
+        soundPool?.release()
+        soundPool = null
+
         // Shut down our background executor
         cameraExecutor.shutdown()
     }
